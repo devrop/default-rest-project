@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- author @ropandiahmad -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<context:property-placeholder location="classpath:/database/database.properties"/> 
+	<bean id="basicDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${database.driverClassName}" />
+		<property name="url" value="${database.url}" />
+		<property name="username" value="${database.username}" />
+		<property name="password" value="${database.password}" />
+	</bean>
+	<bean name="hibernateJpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"/>
+        <bean id="entityManagerFactoryBean" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+          <property name="jpaVendorAdapter" ref="hibernateJpaVendorAdapter" />
+          <property name="dataSource" ref="basicDataSource" />
+          <property name="persistenceUnitName" value="myJpaPersistenceUnit" />
+          <property name="packagesToScan">
+             <list>
+                <value>com.eintrusty.entity</value>
+             </list>
+          </property>         
+	  <property name="jpaProperties">
+	     <props>
+	        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+	        <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+	        <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>			   
+	     </props>
+	  </property>
+	</bean>
+	<bean id="txManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+	    <property name="entityManagerFactory" ref="entityManagerFactoryBean" />
+	</bean>
+	<tx:annotation-driven transaction-manager="txManager" />
+	
+	<jpa:repositories transaction-manager-ref="txManager"
+		base-package="com.eintrusty.dao" entity-manager-factory-ref="entityManagerFactoryBean" /> 		
+</beans>  
